@@ -19,4 +19,10 @@ router.get('/routes', CacheMiddleware({
     res.send(await BeavBusAPI.getRoutes())
 })
 
+router.get('/vehicles', CacheMiddleware({
+    timeout: 60 * 60 * 15
+}), async (req, res) => {
+    res.send(await BeavBusAPI.getVehicleLocations(req.query.route_id, req.query.vehicle_id))
+})
+
 export default router;

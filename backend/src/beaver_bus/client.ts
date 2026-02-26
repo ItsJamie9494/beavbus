@@ -15,6 +15,20 @@ interface Route {
     route_color: string
 }
 
+interface Vehicle {
+    name: string,
+    speed: number,
+    heading: number,
+    is_delayed: boolean,
+    is_on_route: boolean,
+    latitude: number,
+    longitude: number,
+    route_id: number,
+    vehicle_id: number,
+    seconds_at_stop: number,
+    last_updated_timestamp: string
+}
+
 class BeaverBusAPI {
     base_url: string = "https://osushuttles.com";
     api_key: string;
@@ -144,6 +158,60 @@ class BeaverBusAPI {
         }
 
         return routes;
+    }
+
+    async getVehicleLocations(routeID: string, vehicleID: string) {
+        interface APIVehicle {
+            GroundSpeed: number,
+            Heading: number,
+            IsDelayed: boolean,
+            IsOnRoute: boolean,
+            Latitude: number,
+            Longitude: number,
+            Name: string,
+            RouteID: number,
+            Seconds: number,
+            TimeStamp: string,
+            VehicleID: number,
+        };
+
+        let returned_vehicles: APIVehicle[] = [];
+
+        let params = ``;
+        if (routeID) {
+            params += `routeID=${routeID}&`;
+        }
+
+        if (params) {
+            returned_vehicles = await this.__getProtectedEndpointWithParams("GetMapVehiclePoints", params);
+        } else {
+            returned_vehicles = await this.__getProtectedEndpoint("GetMapVehiclePoints");
+        }
+
+        let vehicles = [];
+        for (const api_vehicle of returned_vehicles) {
+            let route: Vehicle = {
+                name: api_vehicle.Name,
+                latitude: api_vehicle.Latitude,
+                longitude: api_vehicle.Longitude,
+                route_id: api_vehicle.RouteID,
+                speed: api_vehicle.GroundSpeed,
+                heading: api_vehicle.Heading,
+                is_delayed: api_vehicle.IsDelayed,
+                is_on_route: api_vehicle.IsOnRoute,
+                vehicle_id: api_vehicle.VehicleID,
+                seconds_at_stop: api_vehicle.Seconds,
+                last_updated_timestamp: api_vehicle.TimeStamp
+            }
+            vehicles.push(route);
+        }
+
+        if (vehicleID) {
+            vehicles = vehicles.filter((vehicle) => vehicle.vehicle_id == vehicleID);
+        }
+        
+
+        return vehicles;
     }
 }
 
