@@ -29,6 +29,16 @@ interface Vehicle {
     last_updated_timestamp: string
 }
 
+// "/Date(1772098571000-0700)/"
+function ConvertAPITimestamp(timestamp: string): string {
+    timestamp = timestamp.slice(6, timestamp.length - 2);
+    let timestamp_parts = timestamp.split('-')
+
+    const date = new Date();
+    date.setUTCMilliseconds(Number(timestamp_parts[0]))
+    return date.toLocaleString()
+}
+
 class BeaverBusAPI {
     base_url: string = "https://osushuttles.com";
     api_key: string;
@@ -171,7 +181,7 @@ class BeaverBusAPI {
             Name: string,
             RouteID: number,
             Seconds: number,
-            TimeStamp: string,
+            TimeStamp: string, // "/Date(1772098571000-0700)/"
             VehicleID: number,
         };
 
@@ -201,7 +211,7 @@ class BeaverBusAPI {
                 is_on_route: api_vehicle.IsOnRoute,
                 vehicle_id: api_vehicle.VehicleID,
                 seconds_at_stop: api_vehicle.Seconds,
-                last_updated_timestamp: api_vehicle.TimeStamp
+                last_updated_timestamp: ConvertAPITimestamp(api_vehicle.TimeStamp)
             }
             vehicles.push(route);
         }
